@@ -32,6 +32,36 @@ namespace Api {
   };
 }
 
+export type User = Api.User & {
+  posts?: Api.Post[];
+};
+
+export const mapPostsToUserId = (posts: Api.Post[]) => {
+  const postToUserId: {
+    [key: string]: Pick<Api.Post, Exclude<keyof Api.Post, "userId">>[];
+  } = {};
+
+  for (const post of posts) {
+    const { userId, ...args } = post;
+
+    postToUserId[userId] ?? (postToUserId[userId] = []);
+
+    postToUserId[userId].push(args);
+  }
+  return postToUserId;
+};
+
+export const joinPosts = (posts: Api.Post[], users: Api.User[]): User[] => {
+  const transformPosts = mapPostsToUserId(posts);
+  const cloneUsers = JSON.parse(JSON.stringify(users));
+
+  for (const user of cloneUsers) {
+    user.posts = transformPosts[user.id] ?? [];
+  }
+
+  return cloneUsers;
+};
+
 const main = async () => {
   let posts, fetchedUsers;
 
@@ -44,6 +74,9 @@ const main = async () => {
     console.log(`${e.message} error occured in one of fetching queries`);
     return;
   }
+
+  const usersWithPosts = joinPosts(posts, fetchedUsers);
+  console.log(usersWithPosts);
 };
 
 main();
