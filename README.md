@@ -5,7 +5,7 @@
 1. Open terminal and execute:
 
    ```bash
-   git clone git@github.com:gwardziak/openXTask2.git
+   git clone https://github.com/gwardziak/openXTask2.git
    cd ./openXTask2
    npm install
    ```
@@ -17,5 +17,5 @@
    ```bash
    npm run dev # to run dev
    npm run build # to build app
-   npm tests # to run tests
+   npm test # to run tests
    ```
