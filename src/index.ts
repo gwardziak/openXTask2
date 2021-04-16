@@ -76,6 +76,21 @@ export const countUserPosts = (users: User[]): string[] => {
   return list;
 };
 
+export const getTitleDuplicates = (posts: Api.Post[]) => {
+  const duplicates: string[] = [];
+  const postCache: { [key: string]: string } = {};
+
+  for (const post of posts) {
+    if (!postCache[post.title]) {
+      postCache[post.title] = post.title;
+    } else {
+      duplicates.push(post.title);
+    }
+  }
+
+  return duplicates;
+};
+
 const main = async () => {
   let posts, fetchedUsers;
 
@@ -91,7 +106,9 @@ const main = async () => {
 
   const usersWithPosts = joinPosts(posts, fetchedUsers);
   const countMessages = countUserPosts(usersWithPosts);
-  console.log(countMessages);
+  const titleDuplicates = getTitleDuplicates(posts);
+
+  console.log(titleDuplicates);
 };
 
 main();
