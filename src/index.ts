@@ -62,6 +62,20 @@ export const joinPosts = (posts: Api.Post[], users: Api.User[]): User[] => {
   return cloneUsers;
 };
 
+export const countUserPosts = (users: User[]): string[] => {
+  const list: string[] = [];
+
+  for (const user of users) {
+    const message = `${user.username} napisał(a) ${
+      user.posts ? user.posts.length : 0
+    } postów`;
+
+    list.push(message);
+  }
+
+  return list;
+};
+
 const main = async () => {
   let posts, fetchedUsers;
 
@@ -76,7 +90,8 @@ const main = async () => {
   }
 
   const usersWithPosts = joinPosts(posts, fetchedUsers);
-  console.log(usersWithPosts);
+  const countMessages = countUserPosts(usersWithPosts);
+  console.log(countMessages);
 };
 
 main();
