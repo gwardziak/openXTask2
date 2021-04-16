@@ -1,4 +1,5 @@
 import { api } from "./utils/api";
+import { getDistanceFromLatLonInKm } from "./utils/getDistanceFromLatLonInKm";
 
 namespace Api {
   export type Post = {
@@ -34,6 +35,12 @@ namespace Api {
 
 export type User = Api.User & {
   posts?: Api.Post[];
+  neighbourhood?: neighbourhood;
+};
+
+type neighbourhood = {
+  neighbour: null | User;
+  distance: number;
 };
 
 export const mapPostsToUserId = (posts: Api.Post[]) => {
@@ -91,6 +98,56 @@ export const getTitleDuplicates = (posts: Api.Post[]) => {
   return duplicates;
 };
 
+export const findNeighbor = (users: User[]) => {
+  const cloneUsers = JSON.parse(JSON.stringify(users));
+  const neighbours = JSON.parse(JSON.stringify(users));
+
+  if (cloneUsers.length === 0) {
+    return [];
+  }
+
+  if (cloneUsers.length === 1) {
+    const neighbourhood = {
+      neighbour: null,
+      distance: 0,
+    };
+
+    cloneUsers[0].neighbourhood = neighbourhood;
+    return cloneUsers;
+  }
+
+  for (const user of cloneUsers) {
+    const neighbourhood: neighbourhood = {
+      neighbour: null,
+      distance: Infinity,
+    };
+
+    for (const neighbour of neighbours) {
+      if (user.id !== neighbour.id) {
+        const distance = getDistanceFromLatLonInKm({
+          firstLocation: {
+            lat: parseFloat(user.address.geo.lat),
+            lon: parseFloat(user.address.geo.lng),
+          },
+          secondLocation: {
+            lat: parseFloat(neighbour.address.geo.lat),
+            lon: parseFloat(neighbour.address.geo.lng),
+          },
+        });
+
+        if (distance < neighbourhood.distance) {
+          neighbourhood.neighbour = neighbour;
+
+          neighbourhood.distance = distance;
+        }
+        user.neighbourhood = neighbourhood;
+      }
+    }
+  }
+
+  return cloneUsers;
+};
+
 const main = async () => {
   let posts, fetchedUsers;
 
@@ -107,8 +164,7 @@ const main = async () => {
   const usersWithPosts = joinPosts(posts, fetchedUsers);
   const countMessages = countUserPosts(usersWithPosts);
   const titleDuplicates = getTitleDuplicates(posts);
-
-  console.log(titleDuplicates);
+  const usersWithNeighbor = findNeighbor(usersWithPosts);
 };
 
 main();
